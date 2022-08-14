@@ -1,6 +1,6 @@
 const router = require("express").Router();
-const { registerValidation, loginValidation } = require("../validation");
 const User = require("../models").userModel;
+const { registerValidation, loginValidation } = require("../validation");
 
 const jwt = require("jsonwebtoken");
 
@@ -25,17 +25,19 @@ router.post("/register", async (req, res) => {
     return res.status(400).send(error.details[0].message);
   }
 
+  const { email, username, password, role } = req.body;
+
   //check if the user exists (Mongoose 操作資料庫的指令是回傳 promise 所以要加 await)
-  const emailExist = await User.findOne({ email: req.body.email });
+  const emailExist = await User.findOne({ email });
   if (emailExist)
     return res.status(400).send("Email has already been registered.");
 
   //register the user
   const newUser = new User({
-    email: req.body.email,
-    username: req.body.username,
-    password: req.body.password,
-    role: req.body.role,
+    email,
+    username,
+    password,
+    role,
   });
 
   //(Mongoose 操作資料庫的指令是回傳 promise 所以要加 await)
