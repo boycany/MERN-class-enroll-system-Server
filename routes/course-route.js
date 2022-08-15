@@ -18,6 +18,17 @@ router.get("/", (req, res) => {
     });
 });
 
+router.get("/instructor/:_id", (req, res)=>{
+  let { _id } = req.params
+  Course.find({ instructor: _id })
+        .populate("instructor", ["username", "email"])
+        .then(data=>{
+          res.send(data)
+        }).catch(()=>{
+          res.status(500).send("Cannot get course data.")
+        })
+})
+
 router.get("/:_id", (req, res) => {
   let { _id } = req.params;
   Course.findOne({ _id })
