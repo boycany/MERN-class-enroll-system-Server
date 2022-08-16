@@ -29,6 +29,28 @@ router.get("/instructor/:_id", (req, res)=>{
         })
 })
 
+router.get("/findByName/:name", (req, res)=>{
+  let { name } = req.params
+  Course.find({ title: name })
+        .populate("instructor", ["username", "email"])
+        .then(courses=>{
+          res.status(200).send(courses)
+        }).catch(err=>{
+          res.status(500).send(err)
+        })
+})
+
+router.get("/student/:_id", (req, res) => {
+  let { _id } = req.params
+  Course.find({ students: _id })
+        .populate("instructor", ["username", "email"])
+        .then(courses=>{
+          res.status(200).send(courses)
+        }).catch(err=>{
+          res.status(500).send(err)
+        })
+})
+
 router.get("/:_id", (req, res) => {
   let { _id } = req.params;
   Course.findOne({ _id })
@@ -52,7 +74,7 @@ router.post("/", async (req, res) => {
 
   //passport 傳過來的 request 物件當中包含 student
   if (req.user.isStudent()) {
-    return res.status(400).send("Only Instrutor can post a new course");
+    return res.status(400).send("Only Instructor can post a new course");
   }
 
   let newCourse = new Course({
@@ -72,6 +94,23 @@ router.post("/", async (req, res) => {
     res.status(400).send("Cannot save course.");
   }
 });
+
+router.post("/enroll/:_id", async(req, res)=> {
+  let { _id } = req.params
+  let { student_id } = req.body
+  console.log('_id :>> ', _id);
+  console.log("student id: >>", student_id)
+  try{
+    let course = await Course.findOne({ _id })
+    console.log('course :>> ', course);
+
+    course.students.push(student_id)
+    await course.save()
+    res.status(200).send("Done Enrollment")
+  }catch(err){
+    res.status(400).send(err)
+  }
+})
 
 router.patch("/:id", async (req, res) => {
   const { error } = courseValidation(req.body);
